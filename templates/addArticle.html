@@ -1,0 +1,53 @@
+{% extends "backendIndex.html" %}
+{% block content %}
+    <div class="edit">
+        <div class="row">
+            <h4 style="width: 90% ;height: 35px;border: dashed gainsboro;">添加文章</h4>
+        </div>
+        <div class="row">
+            <form action="/blog/addArticle/" method="post" novalidate>
+                {% csrf_token %}
+                <div>
+                    <p><label for="title">标题</label></p>
+                    {{ form.title }}
+                </div>
+                <div>
+                    <p><label for="editor_id">内容</label></p>
+                    {{ form.content }}
+                </div>
+             <p>个人分类</p>
+                 <div>
+                    {% for cate in cate_list %}
+                        <input type="radio" name="cate" value="{{ cate.id }}">{{ cate.title }}
+                    {% endfor %}
+                </div>
+             <p>个人标签</p>
+                <div>
+                    {% for tag in tag_list %}
+                        <input type="checkbox" name="tag" value="{{ tag.id }}">{{ tag.name }}
+                    {% endfor %}
+                </div>
+
+
+                <input type="submit" value="添加">
+            </form>
+        </div>
+    </div>
+    <script>
+        {#        KindEditor编辑器的使用#}
+        KindEditor.ready(function (K) {
+            window.editor = K.create('#id_content', {
+                {#                    width:"1030px"#}
+                width: "90%",
+                height: "500px",
+                resizeType: 0,//编辑器不拉伸
+                uploadJson: "/uploadFile/",  //上传图片路径
+                {#                    items:['preview', 'print', 'template', 'code', 'cut', 'copy', 'paste', 'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',]#}
+                //items:你可以筛选你自己想要的
+                extraFileUploadParams: {
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                }
+            });
+        });
+    </script>
+{% endblock %}

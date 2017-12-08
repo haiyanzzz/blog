@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/static/css/index.css">
+</head>
+<body>
+{#导航条#}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">博客园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse pull-right" id="bs-example-navbar-collapse-1 ">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">首页 <span class="sr-only">(current)</span></a></li>
+                <li class="active"><a href="#">帮助</a></li>
+                {% if request.user.is_authenticated %}
+                    <li class="active"><a href="#"><span
+                            class="glyphicon glyphicon-user"></span>{{ request.user.username }}</a></li>
+                    <li class="active"><a href="/log_out/">注销</a></li>
+                {% else %}
+                    <li class="active"><a href="/login/">登录</a></li>
+                    <li class="active"><a href="/register/">注册</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+{#具体内容#}
+<div class="container content">
+    <div class="row">
+        {#        网站分类：左侧菜单#}
+        <div class="col-md-3 left">
+            <div class="panel panel-danger">
+                <div class="panel-heading">网站分类</div>
+                <div class="panel-body">
+                    <!--左侧菜单+-->
+                    <div class="row left_menu">
+                        <div class="col-md-10">
+                            <div class="sidebar">
+                                {% for site in sit_obj %}
+                                    <div class="menu">
+                                        <div class="head bg-warning">{{ site.name }}({{ site.sitearticlecategory_set.all.count }})</div>
+                                        <ul class="nav nav-sidebar hides">
+                                            {% for foo in site.sitearticlecategory_set.all %}
+                                                <li>
+                                                    <a href="/cate/{{ foo.name }}">{{ foo.name }}({{ foo.article_set.count }})</a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {#        文章部分#}
+        <div class="col-md-6 center">
+{#               文章#}
+            <div class="article_list">
+                {% for article in article_obj %}
+                    <div class="article_item">
+                        <div class="title"><a href="{% url 'aaa'  article.user.username %}articles/{{ article.id }}">{{ article.title }}</a></div>
+                        <p></p>
+                        <div class="row">
+                            {#                               头像#}
+                            <div class="avatar col-md-2">
+                                <a href="{% url 'aaa'  article.user.username %}">  <!-- 跳转路径-->
+                                    <img src="{{ article.user.avatar.url }}" alt="" width="60" height="60"></a>
+                                <!-- 图片路径-->
+                            </div>
+                            {#                               摘要#}
+                            <div class="col-md-10">
+                                <p>{{ article.summary }}</p>
+                            </div>
+                        </div>
+                        {#                             评论等#}
+                        <div class="row pub_info">
+                            <a href="/blog/{{ article.user.username }}">{{ article.user.username }}</a>&nbsp;
+                            <span>发表于&nbsp;{{ article.create_time|date:"Y-m-d H:i" }}</span>&nbsp;&nbsp;&nbsp;
+                            <a href=""><span class="glyphicon glyphicon-comment"></span>评论({{ article.comment_count }})</a>&nbsp;&nbsp;&nbsp;
+                            <a href=""><span
+                                    class="glyphicon glyphicon-share-alt"></span>阅读({{ article.read_count }})</a>&nbsp;&nbsp;&nbsp;
+                            <a href=""><span
+                                    class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article.poll_count }})</a>
+                        </div>
+                        <hr style="border: 1px solid #cccccc;">
+                    </div>
+                    <p></p>
+                {% endfor %}
+            </div>
+{#            分页#}
+            <div class="page">
+                <ul class="pagination" id="pager">
+{#                    上一页#}
+                    {% if article_obj.has_previous %}
+                        <li class="previous"><a href="{{ request.path_info }}?page={{ article_obj.previous_page_number }}">上一页</a></li>
+                    {% else %}
+                        <li class="previous disabled"><a href="#">上一页</a></li>
+                    {% endif %}
+
+{#                页码#}
+                    {% for num in paginator.page_range %}
+                        {% if num == current_page %}
+                            <li class="item active"><a href="{{ request.path_info }}?page={{ num }}">{{ num }}</a></li>
+                        {% else %}
+                            <li class="item"><a href="{{ request.path_info }}?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+{#                    下一页#}
+                    {% if article_obj.has_next %}
+                        <li class="next"><a href="{{ request.path_info }}?page={{ article_obj.next_page_number }}">下一页</a></li>
+                    {% else %}
+                        <li class="next disabled"><a href="#">下一页</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+          {#        右侧部分#}
+        <div class="col-md-3 right">
+        <div class="panel panel-success">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Panel heading</div>
+            <!-- List group -->
+            <ul class="list-group">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Morbi leo risus</li>
+            </ul>
+        </div>
+        <hr>
+        <div class="panel panel-info">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Panel heading</div>
+            <!-- List group -->
+            <ul class="list-group">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Morbi leo risus</li>
+            </ul>
+        </div>
+        <hr>
+        <div class="panel panel-danger">
+            <!-- Default panel contents -->
+            <div class="panel-heading">Panel heading</div>
+            <!-- List group -->
+            <ul class="list-group">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Morbi leo risus</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+</div>
+<script src="/static/jquery-3.2.1.min.js"></script>
+<script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script>
+    //左侧菜单
+    $(".head").mouseover(function () {  //鼠标悬浮事件
+        // 把自己 紧挨着的ul标签显示  removeClass("hide")
+        $(this).next().slideDown(300)  //纵向展开
+    }).parent().mouseleave(function () {
+        $(this).children("ul").slideUp(300); // 鼠标移走后收起
+    })
+
+</script>
+</body>
+</html>

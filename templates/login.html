@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="http://static.geetest.com/static/tools/gt.js"></script>
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-1=10">
+            <form class="form-horizontal" id="form_data" action="/login/" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username" class="col-sm-2 control-label">用户名</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" id="username" placeholder="username" name="username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="col-sm-2 control-label">密码</label>
+                    <div class="col-sm-5">
+                        <input type="password" class="form-control" id="password" placeholder="password" name="password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-6 col-md-offset-1">
+{#                            文字部分#}
+                            <label for="vialdCode" class="col-sm-2 control-label">验证码</label>
+                             <div class="col-sm-5">
+                                <input type="text" class="form-control vialdCode_text" id="vialdCode" placeholder="验证码" name="vialdCode">
+                            </div>
+{#                            图片部分#}
+                             <div class="col-md-5">
+                            <img class="vialdCode_img" src="/get_vaildCode_img/" alt="" width="200px" height="100px">
+{#                                 <a href=""></a>     #}
+                        </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox"> 下次自动登录
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <p>
+                            <button type="button" class="btn btn-success login" id="submit">登录</button>
+                            <span class="error has-error"></span></p>
+                        <p>
+                            <button type="button" class="btn btn-primary register">注册</button>
+                        </p>
+                    </div>
+                    <div id="popup-captcha"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<button class="test">clickme</button>
+{#滑动验证码#}
+<script>
+
+    var handlerPopup = function (captchaObj) {
+        $("#submit").click(function () {
+            captchaObj.show();
+        });
+        //定时函数
+         $(".login").click(function () {
+             function foo() {
+                 $(".error").html("")
+             }
+
+             // 成功的回调
+             captchaObj.onSuccess(function () {
+                 var validate = captchaObj.getValidate();
+                 $.ajax({
+                     url: "/pc-geetest/ajax_validate", // 进行二次验证
+                     type: "post",
+                     dataType: "json",
+                     headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                     data: {
+                         username: $('#username').val(),
+                         password: $('#password').val(),
+                         geetest_challenge: validate.geetest_challenge,
+                         geetest_validate: validate.geetest_validate,
+                         geetest_seccode: validate.geetest_seccode
+                     },
+                     success: function (data) {
+                         console.log(data);
+                         if (data["flag"]) {
+{#                             alert(location.search);#}
+{#                             alert(location.search.slice(6));#}
+{#                             方式一#}
+{#                             if (location.search.slice(6)) {#}
+                                 {#                            如果用户没有登录点赞的时候，当用户后来又登录了，就直接让跳转到当前点赞的那个路径#}
+{#                                 location.href = location.search.slice(6)#}
+{#                             }#}
+{#                             else {#}
+{#                                 window.location.href = '/index/'#}
+{#                             }#}
+{#                             方式二：#}
+                             alert($.cookie("next_path"));
+                             if ($.cookie("next_path")){
+                                 location.href = $.cookie("next_path")
+                             }
+                             else{
+                                 location.href = "/index/"
+                             }
+                         }
+                         else {
+                             $(".error").html(data["error_msg"]);
+                             setTimeout(foo, 3000)
+                         }
+                     }
+                 });
+             });
+
+         });
+             // 将验证码加到id为captcha的元素里
+             captchaObj.appendTo("#popup-captcha");
+             // 更多接口参考：http://www.geetest.com/install/sections/idx-client-sdk.html
+         };
+    // 验证开始需要向网站主后台获取id，challenge，success（是否启用failback）
+    $.ajax({
+        url: "/pc-geetest/register?t=" + (new Date()).getTime(), // 加随机数防止缓存
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            // 使用initGeetest接口
+            // 参数1：配置参数
+            // 参数2：回调，回调的第一个参数验证码对象，之后可以使用它做appendTo之类的事件
+            initGeetest({
+                gt: data.gt,
+                challenge: data.challenge,
+                product: "popup", // 产品形式，包括：float，embed，popup。注意只对PC版验证码有效
+                offline: !data.success // 表示用户后台检测极验服务器是否宕机，一般不需要关注
+                // 更多配置参数请参见：http://www.geetest.com/install/sections/idx-client-sdk.html#config
+            }, handlerPopup);
+        }
+    });
+</script>
+<script>
+{#    这是自己做的文字验证码#}
+    /*$(function () {
+        //给登录按钮增加事件
+        $(".login").click(function () {
+            function foo() {
+                $(".error").html("")
+            }
+
+            //用post的话就可以不用ajax了，ajax里面都包括了
+            $.post({
+                url: '/login/',
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: $("#form_data").serialize(),
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    console.log(typeof data);
+                    if (data["flag"]) {
+                        alert(location.search);
+                        alert(location.search.slice(6));
+                        if (location.search.slice(6)){
+{#                            如果用户没有登录点赞的时候，当用户后来又登录了，就直接让跳转到当前点赞的那个路径#}
+                            location.href = location.search.slice(6)
+                        }
+                        else {
+                             window.location.href = '/index/'
+                        }
+                    }
+                    else {
+                        $(".error").html(data["error_msg"]);
+                        setTimeout(foo, 3000)
+                    }
+                }
+            })
+        });
+
+        //给注册按钮增加事件
+        $(".register").click(function () {
+            window.location.href = '/register/'
+        });
+
+        //#给验证码刷新
+        $(".vialdCode_img").click(function () {
+{#            方式一：dom方法#}
+{#            $(this)[0].src+="?"#}
+{#            方式二：jQuery的attr方法#}
+            $(this).attr("src",$(this).attr("src")+'?')
+        })
+    })*/
+
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+    .navbar {
+        background:violet;
+        height: 76px;
+        position: fixed;
+    }
+
+    .nav {
+        margin-top: 18px;
+        font-family: sans-serif, Sakkal Majalla, sans-serif, Lucida Fax;
+        font-size: 18px;
+    }
+
+    .navbar-brand {
+        font-family: verdana, Arial, Helvetica, sans-serif;
+        font-size: 25px;
+        margin-top: 10px;
+    }
+    .content{
+        background: gray;
+        opacity: 0.8;
+    }

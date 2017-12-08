@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/backedIndex.css">
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="/static/kindeditor/kindeditor-all.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<div class="containter">
+    {#头部#}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="top_nav pull-right">
+                <a href="/set_pwd/">修改密码</a>|
+                <a href="#">备份</a>|
+                <a href="#">模板</a>
+            </div>
+            <div class="header">
+                <img src="/static/image/adminlogo.gif" alt="">
+            </div>
+        </div>
+    </div>
+    {#身体部分#}
+    <div class="row">
+        <div class="leftMenu col-md-2 text-center">
+            <div class="panel panel-default">
+                <div class="panel-heading">菜单系列</div>
+                <div class="panel-body">
+                    <p><a href="">文章管理</a></p>
+                    <p><a href="">标签管理</a></p>
+                    <p><a href="">分类管理</a></p>
+                </div>
+            </div>
+
+        </div>
+        <div class="rightMenu col-md-10">
+            {% block content %}
+                <a href="/blog/addArticle/"><button class="btn btn-primary addArticle">添加</button></a>
+                <table class="table table-hover table-condensed">
+                    <tr>
+                        <th>标题</th>
+                        <th>评论数</th>
+                        <th>点赞数</th>
+                        <th>操作</th>
+                        <th>操作</th>
+                    </tr>
+
+                    {% for foo in article_obj %}
+                        <tr>
+                            <td><a href="">{{ foo.title }}</a></td>
+                            <td>{{ foo.up_count }}</td>
+                            <td>{{ foo.comment_count}}</td>
+                            <td><a href=""><button class="btn btn-info">编辑</button></a></td>
+                            <td><a href=""><button class="btn btn-danger">删除</button></a></td>
+                        </tr>
+                    {% endfor %}
+
+                </table>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

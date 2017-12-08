@@ -1,0 +1,137 @@
+{% load Myfilter %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width">
+    <title>Title</title>
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="/static/kindeditor/kindeditor-all.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/homesite.css">
+    <link rel="stylesheet" href="/static/user_home_style/{{ current_user.blog.theme }}">
+</head>
+<body>
+{#导航条#}
+<div class="top">
+    <nav class="navbar  navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">{{ username }}</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse pull-right" id="bs-example-navbar-collapse-1 ">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/index/">博客园 <span class="sr-only">(current)</span></a></li>
+                    <li class="active"><a href="/index/">首页</a></li>
+                    <li class="active"><a href="#">新随笔</a></li>
+                    <li class="active"><a href="/http://www.cnblogs.com/">联系</a></li>
+                    <li class="active"><a href="#">订阅</a></li>
+                    <li class="active"><a href="/blog/backendIndex/">管理</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+</div>
+
+{#内容#}
+<div class="container-fluid">
+    <div class="row content">
+        {#        左侧#}
+        <div class="col-md-3">
+            <div class="left">
+                {#                个人信息面板#}
+                <div class="panel panel-primary">
+                    <div class="panel-heading">个人信息</div>
+                    <div class="panel-body">
+                        <div class="avatar">
+                            头像：<img src="{{ current_user.avatar.url }}" alt="" width="60" height="60">
+                        </div>
+                        <p>昵称：{{ current_user.nickname }}</p>
+                        <p>园龄：{{ current_user.create_time|yuanlingtime }}</p>
+                    </div>
+                </div>
+                {#                 我的标签面板#}
+                <div class="panel panel-primary">
+                    <div class="panel-heading">我的标签</div>
+                    <div class="panel-body">
+                        {% for tag in tag_obj %}
+                            <p><a href="/blog/{{ current_user.username }}/tag/{{ tag.0 }}/">{{ tag.0 }}({{ tag.1 }})</a>
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {#                 随笔分类面板#}
+                <div class="panel panel-primary">
+                    <div class="panel-heading">随笔分类</div>
+                    <div class="panel-body">
+                        {% for category in category_obj %}
+                            <p>
+                                <a href="/blog/{{ current_user.username }}/category/{{ category.0 }}/">{{ category.0 }}({{ category.1 }})</a>
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {#                 随笔档案面板#}
+                <div class="panel panel-primary">
+                    <div class="panel-heading">日期档案</div>
+                    <div class="panel-body">
+                        {% for data in data_obj %}
+                            <p><a href="/blog/{{ current_user }}/data/{{ data.0 }}/">{{ data.0 }}({{ data.1 }})</a></p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {#        右侧#}
+        <div class="col-md-9">
+            {% block content %}
+                <div class="right">
+                    <div class="article_list">
+                        {% for article in article_list %}
+                            <div class="article_item">
+                                {#                    标题#}
+                                <div class="title">
+                                    <h4>
+                                        <a href="/blog/{{ current_user.username }}/articles/{{ article.id }}">{{ article.title }}</a>
+                                    </h4>
+                                </div>
+                                <p></p>
+                                <div class="row">
+                                    {#摘要#}
+                                    <div class="col-md-10">
+                                        <p>{{ article.summary }}</p>
+                                    </div>
+                                </div>
+                                {#                             评论等#}
+                                <div class="row pub_info">
+                                    <a href="/blog/{{ article.user.username }}">{{ article.user.username }}</a>&nbsp;
+                                    <span>发表于&nbsp;{{ article.create_time|date:"Y-m-d H:i" }}</span>&nbsp;&nbsp;&nbsp;
+                                    <span class="glyphicon glyphicon-comment"></span>评论({{ article.comment_count }})&nbsp;&nbsp;
+                                    <span class="glyphicon glyphicon-share-alt"></span>阅读({{ article.read_count }})&nbsp;&nbsp;&nbsp;
+                                    <span class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article.poll_count }})
+                                </div>
+                                <hr style="border: 1px solid #cccccc;">
+                            </div>
+                            <p></p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

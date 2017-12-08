@@ -1,0 +1,49 @@
+.left {
+        width: 254px;
+        height: 500px;
+    }
+
+    .center {
+        width: 700px;
+        height: 500px;
+    }
+
+    .right {
+        width: 216px;
+        height: 500px;
+    }
+
+    .content {
+        margin-top: 80px;
+    }
+
+    body {
+        background-image: url("/static/image/bb.jpg");
+        background-size: 100px;
+    }
+
+    .menu {
+        margin: 0 -20px;
+        border-bottom: 1px solid #336699;
+    }
+
+    .head {
+        padding: 15px;
+    }
+
+    .menu .nav-sidebar > li > a {
+        padding-right: 40px;
+        padding-left: 40px;
+    }
+
+    .left_menu {
+        margin-left: 10px;
+    }
+
+    .hides {
+        display: none;
+    }
+
+    .pub_info {
+        margin-left: 5px;
+    }

@@ -1,0 +1,284 @@
+{% extends "homesite.html" %}
+{% block content %}
+    <div class="article_detail text-center">
+        <h3>{{ article_obj.title }}</h3>
+        <p>{{ article_obj.article_detail.content|safe }}</p>
+        {#        点赞#}
+        <div class="poll">
+            <div class="buryit pull-right">
+                <span class="burynum" id="bury_count">{{ article_obj.down_count }}</span>
+            </div>
+            <div class="diggit pull-right">
+                <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
+            </div>
+            <div class="info" user_name="{{ request.user.username }}"></div>
+        </div>
+        <span class="message pull-right"></span>
+        <h5>已发表评论（评论树）</h5>
+        <div class="comment_tree_list">
+            {#            <div class="comment_list">#}
+            {#                <div class="content_t"><span>2</span></div>#}
+            {#                <div class="comment_list">#}
+            {#                    <div class="content_t"><span>2222</span></div>#}
+            {#                    <div class="comment_list">#}
+            {#                        <div class="content_t"><span>22222</span></div>#}
+            {#                    </div>#}
+            {#                </div>#}
+            {#            </div>#}
+            {#            <div class="comment_list">#}
+            {#                <div class="content"><span>3</span></div>#}
+            {#            </div>#}
+        </div>
+
+    </div>
+    <h5>已发表评论（评论楼）</h5>
+{#    <div class="comment">#}
+{#        {% for comment in comment_obj %}#}
+{#            <div class="comment_xinxi">#}
+{#                <a href="/blog/{{ current_user.username }}">#{{ forloop.counter }}楼</a>&nbsp;&nbsp;{{ comment.time|date:"Y-m-d H:i" }}&nbsp;&nbsp;{{ comment.user.username }}#}
+{#                <img src="{{ comment.user.avatar.url }}" alt="" width="30px" height="30px">#}
+{#                <div class="pull-right">#}
+{#                    <a class="huifu" comment_username="{{ comment.user.username }}"#}
+{#                       comment_id="{{ comment.id }}">回复</a>&nbsp;&nbsp;#}
+{#                    <a href="" class="">支持</a>#}
+{#                </div>#}
+{#            </div>#}
+{#            {% if comment.farther_comment_id %}#}
+{#                <div class="comm_content" style="background-color:lightsteelblue;">#}
+{#                    @<a href="">{{ comment.farther_comment.user.username }}&nbsp;&nbsp;</a>#}
+{#                    {{ comment.farther_comment.content|safe }}#}
+{#                </div>#}
+{#            {% endif %}#}
+{#            <div>#}
+{#                {{ comment.content|safe }}#}
+{#            </div>#}
+{#            <hr style="border: 1px dashed ">#}
+{#        {% endfor %}#}
+{##}
+{#    </div>#}
+    <div class="comment_detail"></div>
+    <div><img src="/static/image/comment.gif" alt="">发表评论</div>
+    <p></p>
+    <h3>昵称：<input type="text" id="tbCommentAuthor" class="author" disabled="disabled" size="50"
+                  value="{{ current_user.nickname }}"></h3>
+    <div class="comment_text">
+        <span id="zzzzz">评论内容：</span>
+        {#        <img src="/static/image/abc.png" alt="" class="comment_img">#}
+    </div>
+    <form>
+        {% csrf_token %}
+        <p><textarea name="" id="comment_content" cols="70" rows="10"></textarea></p>
+        <input type="button" value="提交评论" class="submit_comment">
+    </form>
+    <script>
+        //用ajax实现点赞
+        $(".diggit").click(function () {
+            if ($(".info").attr("user_name")) {  //登录状态
+                $.ajax({
+                    url: "/blog/poll/",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        article_id: "{{ article_obj.id }}",
+                        is_positive: "1"
+                    },
+                    success: function (data) {
+                        var data = JSON.parse(data);
+                        console.log(data["tishi"]);  //false
+                        {#                    if (!data["tishi"]) {    //如果是True就让跳转#}
+                        {#                        $(".message").html("请你先&nbsp;<a href='/login/'>登录</a>");#}
+                        {#                    }#}
+                        {#                    else {#}
+                        if (data["state"]) {
+                            var val = parseInt($("#digg_count").html()) + 1;
+                            $("#digg_count").html(val);
+                            $(".message").html("点赞成功").css("color", "red");
+                        }
+                        else if (data["is_repeat"]) {
+                            $(".message").html("不能重复点赞").css("color", "red")
+                        }
+                    }
+                })
+            }
+            else {
+                alert(location.pathname);  //拿到的是路径部分
+                location.href = "/login/?next=" + location.pathname
+            }
+        });
+        //用ajax实现点灭
+        $(".buryit").click(function () {
+            if ($.cookie("username")) {    //登录状态,和点赞一样，是第二种方式，建议用cookie的方式
+                $.ajax({
+                    url: "/blog/poll/",
+                    type: "POST",
+                    headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                    data: {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        article_id: "{{ article_obj.id }}",
+                        is_positive: "0"
+                    },
+                    success: function (data) {
+                        var data = JSON.parse(data);
+                        console.log(data);
+                        console.log(data.tishi);
+                        if (data["state"]) {
+                            var val = parseInt($("#bury_count").html()) + 1;
+                            $("#bury_count").html(val);
+                            $(".message").html("踩成功").css("color", "red");
+                        }
+                        else if (data["is_repeat"]) {
+                            $(".message").html("不能重复点").css("color", "red")
+                        }
+                    }
+                })
+            }
+            else {
+                alert(location.pathname);  //拿到的是路径部分
+                location.href = "/login/?next=" + location.pathname
+            }
+        });
+
+        {#                KindEditor编辑器的使用#}
+        KindEditor.ready(function (K) {
+            window.editor = K.create('#comment_content', {
+{#                                    width:"1030px"#}
+                width: "40%",
+                height: "300px",
+                resizeType: 0,//编辑器不拉伸
+                uploadJson: "/uploadFile/",  //上传图片路径
+                items:['preview', 'print', 'template', 'bold','image','underline', 'code', 'cut', 'copy', 'paste', '|', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull','title', 'fontname', 'fontsize', '|', 'textcolor', 'bgcolor',],
+                //items:你可以筛选你自己想要的
+                extraFileUploadParams: {
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                },
+                afterFocus:function () {   //获取焦点之后要做的事情
+                 $('html,body').animate(   //animate设置自定义属性
+                     {scrollTop:$('#zzzzz').offset().top},0)
+                }   //像锚点一样，一点回复跳转
+            });
+        });
+
+        //用ajax实现文章评论
+        $(".submit_comment").click(function () {
+            var content;
+            editor.sync();   //启动editor
+            if ($("#comment_content").val().charAt(0)!="@"){
+                farther_comment_id=null
+            }
+            if (farther_comment_id) {  //如果有值的情况，就是子评论
+                var index = $("#comment_content").val().indexOf("\n");   //按\n切开
+                content = $("#comment_content").val().slice(index + 1);   //取出@用户名后面的值
+            } else {
+                //就是根评论
+                content = $("#comment_content").val()
+            }
+            if ($.cookie("username")) {
+                $.ajax({
+                    url: "/blog/comment/",
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                        article_id: "{{ article_obj.id }}",
+                        content: content,
+                        farther_comment_id: farther_comment_id
+                    },
+                    success: function (data) {
+
+                        if (!data["flag"]) {    //如果是True就让跳转
+                            window.location.href = "/login/"
+                        }
+                        else {
+                            console.log(data.create_time.slice(0, 19));
+                            //1、用字符串拼接的方式添加，默认了一件事，当前的评论人就是当前的用户
+                            if (farther_comment_id) {//子评论
+
+                                console.log(data.parent_comment_username);
+                                s = '<div class="comment_xinxi"> <img src="{{ request.user.avatar.url }}" alt="" width="30px" height="30px">{{ request.user.username }}<a href="/blog/{{ current_user.username }}">#{{ forloop.counter }}楼</a>&nbsp;&nbsp;' + data.create_time.slice(0, 19) + '&nbsp;&nbsp; <div class="pull-right"> <a class="huifu" comment_id=' + data.comment_id + ' comment_username="{{ request.user.username }}">回复</a>&nbsp;&nbsp; <a href="" class="">支持</a> </div> </div> <div class="comm_content" style="background-color:lightsteelblue;">@<a href="">' + data.parent_comment_username + '&nbsp;&nbsp;</a>' + data.parent_comment_content + '</div><div class="comm_content"> ' + content + '</div><hr style="border: 1px dashed ">'
+                            }
+                            else {//这是一个根评论
+                                s = '<div class="comment_xinxi"><img src="{{ request.user.avatar.url }}" alt="" width="30px" height="30px">{{ request.user.username }} <a href="/blog/{{ current_user.username }}">#{{ forloop.counter }}楼</a>&nbsp;&nbsp;' + data.create_time.slice(0, 19) + '&nbsp;&nbsp; <div class="pull-right"> <a class="huifu"  comment_id=' + data.comment_id + ' comment_username="{{ request.user.username }}">回复</a>&nbsp;&nbsp; <a href="" class="">支持</a> </div> </div><div class="comm_content"> ' + content + '</div><hr style="border: 1px dashed ">';
+                            }
+                            $(".comment").append(s);
+                            //清空区域内容
+{#                            $("#comment_content").val("");#}
+                            editor.html(""); //清空内容
+                            farther_comment_id = null;
+                        }
+                    }
+
+                })
+            }
+            else {
+                location.href = "/login/?next=" + location.pathname
+            }
+        });
+
+        //用ajax实现评论的评论
+        //回复按钮
+        var farther_comment_id = null;  //父级评论id默认设置成NULL，如果有值就说明是评论的评论，如果是NULL说明就是根评论，对文章的评论
+        //给不动的父亲增加事件委派    $(".comment")：不动的父亲
+        $(".comment").on("click", ".huifu", function () {
+            //让显示父评论的@评论名:可设置一个自定义属性，方便获取
+            var parent_comment_username = $(this).attr("comment_username");
+{#            $("comment_content").focus();#}
+{#            $("#comment_content").val("@" + parent_comment_username + "\n");#}
+            editor.html("");  //先清空原有内容
+            editor.focus();   //获取焦点
+            editor.appendHtml("@" + parent_comment_username + "<br>");//追加内容
+            //取父评论的id：也可以设置一个自定义的属性
+            farther_comment_id = $(this).attr("comment_id");
+
+        });
+
+
+         //给不动的父亲增加事件委派    $(".comment")：不动的父亲
+        $(".comment_tree_list").on("click", ".huifu", function () {
+{#                alert(123);#}
+                //让显示父评论的@评论名:可设置一个自定义属性，方便获取
+                var parent_comment_username = $(this).attr("comment_username");
+    {#            $("comment_content").focus();#}
+    {#            $("#comment_content").val("@" + parent_comment_username + "\n");#}
+                editor.html("");  //先清空原有内容
+                editor.focus();   //获取焦点
+                editor.appendHtml("@" + parent_comment_username + "<br>");//追加内容
+                //取父评论的id：也可以设置一个自定义的属性
+                farther_comment_id = $(this).attr("comment_id");
+        });
+
+        //获取评论树（只要一加载的时候，就发起请求,不需要对哪个绑定事件）
+        $.ajax({
+            url: "/blog/commenttree/{{ article_obj.id }}",
+            type: "GET",
+            success: function (data) {
+                var data = JSON.parse(data);
+                var s = ShowCommentTree(data);//展开评论树
+                $(".comment_tree_list").append(s);    //吧评论树添加到标签中在页面上渲染
+            }
+        });
+        {#        ============展开评论树=============#}
+
+        // 展开评论树
+        function ShowCommentTree(comment_list) {    //  comment_list: [{"content":"1","children_list":[{}]},{"content":"2"},{"content":"3"},]
+            var html = "";
+
+            $.each(comment_list, function (i, comment_dict) {
+                var val = comment_dict["content"];
+                var comment_time = comment_dict["comment_time"];
+                var comment_id = comment_dict["id"];
+                var comment_str= '<div class="comment1"><div class="content"><div class="comment_xinxi"> <img src="{{ request.user.avatar.url }}" alt="" width="30px" height="30px"> {{ request.user.username }}<a href="/blog/{{ current_user.username }}">#{{ forloop.counter }}楼</a>&nbsp;&nbsp;' + comment_time.slice(0, 19) + '&nbsp;&nbsp; <div class="pull-right"> <a class="huifu" comment_id= ' + comment_id + ' comment_username="{{ request.user.username }}">回复</a>&nbsp;&nbsp; <a href="" class="">支持</a> </div> </div><span>' + val + '</span></div><hr style="border: 1px dashed ">';
+
+                if (comment_dict["children_comment"]) {
+                    var s = ShowCommentTree(comment_dict["children_comment"]);    // [{},{}]
+                    comment_str += s
+                }
+                comment_str += "</div>";
+                html += comment_str
+            });
+            return html
+        }
+
+
+    </script>
+{% endblock %}
+
+
